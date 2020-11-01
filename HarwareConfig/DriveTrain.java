@@ -211,8 +211,12 @@ public class DriveTrain {
 
         double deltaAngle;
 
+        /* Get the IMU angle */
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);//This line calls the angles from the IMU
-        deltaAngle = -(angles.firstAngle - priorAngle);// Determine how much the angle has changed since we last checked teh angle
+        /* Compute the change in angle since the last measurement */
+        deltaAngle = -(angles.firstAngle - priorAngle);// Determine how much the angle has changed since we last checked the angle
+        /* Since the IMU angle is wrapped we have to check for a wrap crossing
+        * We don't want the robotHeading to be wrapped because that will create a discontinuity */
         if (deltaAngle > 180) {//This is IF/THEN for the unwrap routine
             robotHeading += deltaAngle - 360;//Decrease angle for negative direction //rotation
         } else if (deltaAngle < -180) {

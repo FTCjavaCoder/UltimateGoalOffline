@@ -27,8 +27,9 @@ import UltimateGoal_RobotTeam.Utilities.PursuitPoint;
 	public void initialize() {
 		runtime.reset();
 
-		cons.DRIVE_POWER_LIMIT = 0.75;
-		cons.STEERING_POWER_LIMIT = cons.DRIVE_POWER_LIMIT *0.65;//somewhere between 0.60 and 0.72
+		// Set low speed for initial demo
+		cons.DRIVE_POWER_LIMIT = 0.3;
+		cons.STEERING_POWER_LIMIT = cons.DRIVE_POWER_LIMIT  * 1.0;// scale back power limits as necessary
 		cons.STEERING_POWER_GAIN = 0.1;
 
 		// configure the robot needed - for this demo only need DriveTrain
@@ -45,6 +46,7 @@ import UltimateGoal_RobotTeam.Utilities.PursuitPoint;
 		// HW ELEMENTS *****************    DriveTrain  Shooter  Conveyor	WobbleArm	Collector
 		boolean[] configArray = new boolean[]{ true, 	false, 	false, 		false, 		false};
 
+		testModeActive = false;//configure real robot
 		robotUG = new HardwareRobotMulti(this, configArray,testModeActive);
 
 		// Tel the robot that it's starting at (0,0) field center and angle is zero - facing EAST - Right
@@ -52,6 +54,7 @@ import UltimateGoal_RobotTeam.Utilities.PursuitPoint;
 		robotUG.driveTrain.robotX = 0;
 		robotUG.driveTrain.robotY = 0;
 		robotUG.driveTrain.robotLocation.setLocation(0,0,0);
+
 	}
 
 	@Override
@@ -61,21 +64,17 @@ import UltimateGoal_RobotTeam.Utilities.PursuitPoint;
 		pathPoints= fieldPoints;
 		// Always start path with where robot is
 		pathPoints.add(new PursuitPoint(robotUG.driveTrain.robotX ,robotUG.driveTrain.robotY));
-
-		pathPoints.add(new PursuitPoint(10,0));
-		pathPoints.add(new PursuitPoint(20,10));
-		pathPoints.add(new PursuitPoint(30,30));
-		pathPoints.add(new PursuitPoint(65,30));
-		pathPoints.add(new PursuitPoint(65,65));
-		pathPoints.add(new PursuitPoint(10,65));
-		pathPoints.add(new PursuitPoint(0,15));
+		pathPoints.add(new PursuitPoint(24,24));
+		pathPoints.add(new PursuitPoint(0,48));
+		pathPoints.add(new PursuitPoint(-24,24));
+		pathPoints.add(new PursuitPoint(-6,6));
 
 
 		for(int h=0;h<pathPoints.size()-1;h++) {
 			lines.add(new PursuitLines(pathPoints.get(h).x, pathPoints.get(h).y, pathPoints.get(h+1).x, pathPoints.get(h+1).y));
 		}
 
-                Billy.drivePursuit(pathPoints, this, "Drive multi-lines");
+                robotUG.driveTrain.drivePursuit(pathPoints, this, "Drive multi-lines");
 
 	}
 
