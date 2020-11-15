@@ -17,9 +17,7 @@ import java.util.List;
 
 import UltimateGoal_RobotTeam.OpModes.BasicOpMode;
 
-import OfflineCode.OfflineHW.Telemetry;
 import UltimateGoal_RobotTeam.Utilities.PursuitLines;
-import UltimateGoal_RobotTeam.Utilities.PursuitPath;
 import UltimateGoal_RobotTeam.Utilities.PursuitPoint;
 
 @Autonomous(name="BasicAuto", group="Autonomous")
@@ -173,7 +171,7 @@ public ArrayList<PursuitLines> lines = new ArrayList<>();
         drivingMiniBot = false;
         //Values For Full Robot
 //        detectionRotateSpeed = 0.1 * (40.0/60.0);
-        cons.DEGREES_TO_COUNTS = (1440.0/360.0) * (40.0/60.0);
+        cons.DEGREES_TO_COUNTS_40_1 = (1440.0/360.0) * (40.0/60.0);
 
 //        stoneArmUnderBridgeBlue = 0.85;// for blue oriented servo
 //        stoneArmDownBlue = 0.23;// for blue oriented servo was 0.20
@@ -271,7 +269,7 @@ public ArrayList<PursuitLines> lines = new ArrayList<>();
         drivingMiniBot = true;
         //Values For Mini Robot
         detectionRotateSpeed = 0.1;
-        cons.DEGREES_TO_COUNTS = (1440.0/360.0);
+        cons.DEGREES_TO_COUNTS_40_1 = (1440.0/360.0);
 
 //        Billy.stoneArmInitBlue = 1;// for blue oriented servo was 0
 //        Billy.stoneArmInitRed = 1;// for red oriented servo

@@ -29,7 +29,6 @@ import OfflineCode.OfflineHW.BNO055IMU;
 import OfflineCode.OfflineHW.JustLoggingAccelerationIntegrator;
 import OfflineCode.OfflineHW.DcMotor;
 import OfflineCode.OfflineHW.Servo;
-import OfflineCode.OfflineHW.Telemetry;
 
 //import org.firstinspires.ftc.robotcontroller.external.samples.SensorREVColorDistance;
 
@@ -565,12 +564,12 @@ public class HardwareRobot
 
         incrementalDistance = ((deltaPos[0] * driveDirection[0]) + (deltaPos[1] * driveDirection[1]) + (deltaPos[2] * driveDirection[2]) + (deltaPos[3] * driveDirection[3])) / 4;
 
-        distanceTraveled += incrementalDistance / om.cons.DEGREES_TO_COUNTS / om.cons.ROBOT_INCH_TO_MOTOR_DEG;
+        distanceTraveled += incrementalDistance / om.cons.DEGREES_TO_COUNTS_40_1 / om.cons.ROBOT_INCH_TO_MOTOR_DEG;
 
         priorPos = currentPos;
 
         om.telemetry.addData("Motor Movement", "FL (%d) FR (%d) BR (%d) BL (%d)", deltaPos[0], deltaPos[1], deltaPos[2], deltaPos[3]);
-        om.telemetry.addData("Robot Movement", "Incremental: (%.2f) Total: (%.2f)", incrementalDistance / om.cons.DEGREES_TO_COUNTS / om.cons.ROBOT_INCH_TO_MOTOR_DEG, distanceTraveled);
+        om.telemetry.addData("Robot Movement", "Incremental: (%.2f) Total: (%.2f)", incrementalDistance / om.cons.DEGREES_TO_COUNTS_40_1 / om.cons.ROBOT_INCH_TO_MOTOR_DEG, distanceTraveled);
         om.telemetry.update();
 
     }
@@ -1025,7 +1024,7 @@ public class HardwareRobot
         //drive motor calculations
 
         int deltaSum = (deltaFL  + deltaFR  + deltaBR  + deltaBL)/4;
-        robotAngle += deltaSum / (om.cons.DEGREES_TO_COUNTS * om.cons.ROBOT_INCH_TO_MOTOR_DEG *
+        robotAngle += deltaSum / (om.cons.DEGREES_TO_COUNTS_40_1 * om.cons.ROBOT_INCH_TO_MOTOR_DEG *
                 om.cons.ROBOT_DEG_TO_WHEEL_INCH * om.cons.adjRotate);
         //The sign of this angle with match what the IMU returns which should be opposite the CW = + convention
 
@@ -1045,9 +1044,9 @@ public class HardwareRobot
 
 //Coordinate transformation to take motor drive coordinates to robot body reference frame - fixed 45 deg rotation
         double robotXInc = factor* ((robotFRBLCount*0.707) + (robotFLBRCount*0.707))/
-                (om.cons.DEGREES_TO_COUNTS*om.cons.ROBOT_INCH_TO_MOTOR_DEG);
+                (om.cons.DEGREES_TO_COUNTS_40_1 *om.cons.ROBOT_INCH_TO_MOTOR_DEG);
         double robotYInc = -factor* ((-robotFRBLCount*0.707) + (robotFLBRCount*0.707))/
-                (om.cons.DEGREES_TO_COUNTS*om.cons.ROBOT_INCH_TO_MOTOR_DEG);
+                (om.cons.DEGREES_TO_COUNTS_40_1 *om.cons.ROBOT_INCH_TO_MOTOR_DEG);
         robotX += robotXInc;
         robotY += robotYInc;
 
