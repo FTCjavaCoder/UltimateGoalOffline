@@ -40,8 +40,10 @@ public class Constants {
     public double TELEOP_DRIVE_POWER_LIMIT = 1.0;//chassis drive wheel (FR, FL, BR, BL) Motor power/speed limit for teleop
     public double TELEOP_ROTATE_POWER_LIMIT = 1.0;//chassis drive wheel (FR, FL, BR, BL) Motor power/speed limit for teleop
 
+   //new Ultimate Goal variables
+    public double PURSUIT_RADIUS = 6.0;
+
     //Old Skystone variables
-//    public double JACK_POWER_LIMIT = 1.0;
 //    public double SLIDE_POWER_LIMIT = 0.40;// was 0.6
 //
 //    public final double TURN_POWER =  0.40;
@@ -128,7 +130,7 @@ public class Constants {
 
         pHM.put("teleOpRotatePowerLimit", new ParameterHM(1.0, ParameterHM.instanceType.powerLimit));// was 0.40
 
-//        pHM.put("jackPowerLimit", new ParameterHM(1.0, ParameterHM.instanceType.powerLimit));// was 0.75
+        pHM.put("pursuitRadius", new ParameterHM(6.0, ParameterHM.instanceType.distanceInches));
 //
 //        pHM.put("slidePowerLimit", new ParameterHM(0.40, ParameterHM.instanceType.powerLimit));// was 0.40
 //
@@ -200,9 +202,9 @@ public class Constants {
             if(s.equals("teleOpRotatePowerLimit")) {
                 TELEOP_ROTATE_POWER_LIMIT = pHM.get(s).value;
             }
-//            if(s.equals("jackPowerLimit")) {
-//                JACK_POWER_LIMIT = pHM.get(s).value;
-//            }
+            if(s.equals("pursuitRadius")) {
+                PURSUIT_RADIUS = pHM.get(s).value;
+            }
 //            if(s.equals("slidePowerLimit")) {
 //                SLIDE_POWER_LIMIT = pHM.get(s).value;
 //            }

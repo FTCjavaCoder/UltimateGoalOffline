@@ -320,8 +320,7 @@ public class DriveTrain {
 
     }
 
-    public void robotNavigator(BasicAuto om){
-        double factor = 1;
+    public void robotNavigator(BasicOpMode om){
 
         int flCount = frontLeft.getCurrentPosition();
         int frCount = frontRight.getCurrentPosition();
@@ -343,7 +342,7 @@ public class DriveTrain {
 //                om.cons.ROBOT_DEG_TO_WHEEL_INCH );
 
         // Update to use IMU angle
-        robotAngle = robotHeading;
+//        robotAngle = robotHeading;
         /** robotAngle is not needed
          * can be ignored because navigator only needs to track robot on field in field coordinates
          */
@@ -373,8 +372,7 @@ public class DriveTrain {
                 (om.cons.DEGREES_TO_COUNTS_60_1*om.cons.ROBOT_INCH_TO_MOTOR_DEG*om.cons.adjRight);
         robotX += robotXInc;
         robotY += robotYInc;
-/** robotX & robotY can be local variables
- * navigator only needs to return values in field coordinates
+/** robotX & robotY are not used else where - navigator tracks field coordinates
  */
 //Coordinate transformation to take robot body coordinates to field reference frame - depends on IMU angle
 //Angle reference from field to robot is negative angle in CW = + robot frame, uses + = CCW {IMU frame & field frame}
@@ -408,9 +406,10 @@ public class DriveTrain {
     public PursuitPoint findPursuitPoint(ArrayList<PursuitPoint> inputPoints, FieldLocation robot, double radius) {
 
 //        PursuitPoint currentPoint = inputPoints.get(0); // issue with tracking the start point as in scope
+        //set line starting point as default for starting to follow ... when robot gets lost it heads to first line point
+
         PursuitPoint currentPoint = null;
 
-        //set line starting point as default for starting to follow ... when robot gets lost it heads to first line point
 
 
 //        PursuitPoint robotOffsetPoint = new PursuitPoint(robot.x,robot.y);
@@ -520,7 +519,6 @@ public class DriveTrain {
 
         return currentPoint;
     }
-    //    public enum pathDirection {POSITIVE,NEGATIVE}; // DELETE?  Only used in pursuit path?
     public double selectiveWrap(double angle, double angleCompare) {
         // keep wrap point away from angleCompare +/- 90
         if(((angleCompare % 360) > 90) || ((angleCompare % 360) < -90)){
@@ -598,7 +596,7 @@ public class DriveTrain {
         return PointList;
 
     }
-    public void setRobotAngle(PursuitPoint targetP, FieldLocation field){
+    public void setTargetAngle(PursuitPoint targetP, FieldLocation field){
         double angle = -Math.atan2(targetP.y- field.y, targetP.x- field.x) * 180/Math.PI;
         /** negative sign for the change in rotation sign convention + = CW for steering
          * NOTE SIGN CONVENTION
@@ -941,10 +939,10 @@ public class DriveTrain {
 
         boolean atEnd = false;
         double powerLimit = om.cons.DRIVE_POWER_LIMIT;
-        double radius = 6.0;
+        double radius = om.cons.PURSUIT_RADIUS;
 
-        fieldX = robotFieldLocation.x;
-        fieldY = robotFieldLocation.y;
+//        fieldX = robotFieldLocation.x;
+//        fieldY = robotFieldLocation.y;
 
         robotNavigator(om);
         om.updateIMU();
@@ -956,7 +954,7 @@ public class DriveTrain {
 
         distanceToTarget = findDistance(new PursuitPoint(robotFieldLocation.x,robotFieldLocation.y),pathPoints.get(pathPoints.size()-1));
 
-        while((count < 280) && (distanceToTarget > radius) && (om.opModeIsActive() || om.testModeActive)) {
+        while((distanceToTarget > radius) && (om.opModeIsActive() || om.testModeActive)) {
 //            angleUnWrap();
             robotNavigator(om);
             om.updateIMU();
@@ -965,8 +963,9 @@ public class DriveTrain {
 
 
             //navigator calculates its own angle, compare to IMU for accuracy?
-            setRobotAngle(targetPoint,  robotFieldLocation);// calculates the angle to the target point - updates "targetHeading"
+            setTargetAngle(targetPoint,  robotFieldLocation);// calculates the angle to the target point - updates "targetHeading"
             steeringPower = calcSteeringPowerIMU(targetHeading,om);// "targetHeading" used for steering power calculation
+                //calcSteeringPower contains angleUnwrap that updates the robotHeading for the robotNavigator in next loop iteration
 
             /**
              * needed ELSE to reset the powerLimit
@@ -985,15 +984,7 @@ public class DriveTrain {
 
 
             for (int i = 0; i < 4; i++) {
-
-//                prePower[i] = Range.clip((distanceToTarget * driveDirection[i]) * POWER_GAIN, -powerLimit, powerLimit) + steeringPower;
-
-                //Changed to always be positive - driving forwards
-//                prePower[i] = Range.clip((distanceToTarget * driveDirection[i]) * POWER_GAIN, 0, powerLimit) + steeringPower;
-                // Chnaged to be max power unless limited by steerting
                 prePower[i] = (driveDirection[i] * powerLimit) + steeringPower;
-
-
             }
 
             maxLeft = Math.max(Math.abs(prePower[0]), Math.abs(prePower[3]));
@@ -1017,7 +1008,7 @@ public class DriveTrain {
 //            om.telemetry.addData("Motor Commands: ", "FL (%d) FR (%d) BR (%d) BL (%d)",
 //                    targetPos[0], targetPos[1],targetPos[2],targetPos[3]);
             om.telemetry.addData("Robot Heading", " Desired: %.2f, RobotNav: %.2f, FieldNav: %.2f, RobotHeading: %.2f, IMU RAW: %.2f", targetHeading, robotAngle, fieldAngle, robotHeading,imu.fakeAngle);
-            om.telemetry.addData("Robot Location", " Desired(X,Y): (%.2f,%.2f), Actual(X,Y): (%.2f,%.2f), IMU(X,Y): (%.2f,%.2f)",
+            om.telemetry.addData("Robot Location", " Desired(X,Y): (%.2f,%.2f), Navigator(X,Y): (%.2f,%.2f), IMU(X,Y): (%.2f,%.2f)",
                     targetPoint.x,targetPoint.y, robotFieldLocation.x, robotFieldLocation.y,imu.robotOnField.x,imu.robotOnField.y);
 
             om.telemetry.addData("Motor Counts", "FL (%d) FR (%d) BR (%d) BL (%d)",
