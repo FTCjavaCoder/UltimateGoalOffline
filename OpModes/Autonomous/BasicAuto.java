@@ -56,7 +56,7 @@ public class BasicAuto extends BasicOpMode {
 //
     public boolean skystoneFound = false;
 //
-    public int stoneSelect = -1;// FOR BLUE: 0 nearest to bridge, 1 center, 2 farthest from bridge FOR RED: 0 farthest from bridge, 1 center, 2 nearest to bridge
+    public int ringSelect = -1;// FOR BLUE: 0 nearest to bridge, 1 center, 2 farthest from bridge FOR RED: 0 farthest from bridge, 1 center, 2 nearest to bridge
 //
 //    public double secondStoneBackup = 8;
 //
@@ -82,12 +82,12 @@ public class BasicAuto extends BasicOpMode {
 
     public ElapsedTime runtime = new ElapsedTime(); //create a counter for elapsed time
 
-    public boolean haveBlueFoundation = false;
-    public boolean haveRedFoundation = false;
-    public boolean haveBlueSkyStone1 = false;
-    public boolean haveBlueSkyStone2 = false;
-    public boolean haveRedSkyStone1 = false;
-    public boolean haveRedSkyStone2 = false;
+    public boolean haveBlueRing = false;
+    public boolean haveRedRing = false;
+    public boolean haveBlueWobble1 = false;
+    public boolean haveBlueWobble2 = false;
+    public boolean haveRedWobble1 = false;
+    public boolean haveRedWobble2 = false;
 /** COMMENTED OUT FOR EXPERIMENTAL CODE
 
  //********** Added from OfflineOpModeLibs to BasicAuto forOfflineOpModeRunFile ******************

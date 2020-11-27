@@ -1,5 +1,6 @@
 package UltimateGoal_RobotTeam.HarwareConfig;
 
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.Range;
 
@@ -179,6 +180,36 @@ public class DriveTrain {
             imu = om.hardwareMap.get(BNO055IMU.class, "imu");
             imu.initialize(parameters);
 
+            frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+            frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+            backLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+            backRight.setDirection(DcMotorSimple.Direction.FORWARD);
+
+            frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            //Reset all motor encoders
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            frontLeft.setTargetPosition(0);
+            frontRight.setTargetPosition(0);
+            backLeft.setTargetPosition(0);
+
+            //Set all motors to position mode (assumes that all motors have encoders on them)
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            frontLeft.setPower(0);
+            frontRight.setPower(0);
+            backLeft.setPower(0);
+            backRight.setPower(0);
         }
 
     }
@@ -198,6 +229,17 @@ public class DriveTrain {
         // Should there be an input to set the angle or should that be for the field angle?
 
         om.sleep(100);
+    }
+
+    public void initIMUtoAngle(BasicOpMode om, double initAngle) {
+
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);//This line calls the angles from the IMU
+
+        offset = angles.firstAngle - initAngle; //Determine initial angle offset 
+        priorAngle = angles.firstAngle; //set prior angle for unwrap to be initial angle 
+        robotHeading = angles.firstAngle - offset; //robotHeading to be set at 0 degrees to start 
+
+//        om.sleep(100);
     }
     /** METHODS TO COMPELTE CALCULATIONS NEEDED FOR OTHER DRIVIGN METHODS
      *
@@ -228,6 +270,14 @@ public class DriveTrain {
 
         angleUnWrap();
         double steerPower = (angleWanted - robotHeading) * om.cons.STEERING_POWER_GAIN;
+
+        double clippedSteering = -1.0 * (Range.clip(steerPower, -om.cons.STEERING_POWER_LIMIT, om.cons.STEERING_POWER_LIMIT) );// -1.0 due to motors must turn neagtive direction for CW rotation (+ rotation)
+
+        return clippedSteering;
+    }
+    public double calcSteeringPowerNav(double angleWanted, double angle, BasicOpMode om) {
+
+        double steerPower = (angleWanted - angle) * om.cons.STEERING_POWER_GAIN;
 
         double clippedSteering = -1.0 * (Range.clip(steerPower, -om.cons.STEERING_POWER_LIMIT, om.cons.STEERING_POWER_LIMIT) );// -1.0 due to motors must turn neagtive direction for CW rotation (+ rotation)
 
@@ -342,7 +392,9 @@ public class DriveTrain {
 //                om.cons.ROBOT_DEG_TO_WHEEL_INCH );
 
         // Update to use IMU angle
-//        robotAngle = robotHeading;
+        angleUnWrap();// update heading info
+
+        robotAngle = robotHeading;
         /** robotAngle is not needed
          * can be ignored because navigator only needs to track robot on field in field coordinates
          */
@@ -553,7 +605,7 @@ public class DriveTrain {
         return angle;
     }
     public ArrayList<PursuitPoint> findIntersection(PursuitLines pl, double radius, PursuitPoint robot){
-        /** Note being used - might have errors
+        /** Not being used - might have errors
          * Compare against findPursuitPoint
          */
         ArrayList<PursuitPoint> PointList = new ArrayList<>();
@@ -937,12 +989,14 @@ public class DriveTrain {
         double minFWDPower = om.cons.DRIVE_POWER_LIMIT*0.05;
         double ratio = (om.cons.DRIVE_POWER_LIMIT - minFWDPower) / (om.cons.STEERING_POWER_LIMIT - steerThreshold);
 
-        boolean atEnd = false;
+//        boolean atEnd = false;
         double powerLimit = om.cons.DRIVE_POWER_LIMIT;
         double radius = om.cons.PURSUIT_RADIUS;
 
-//        fieldX = robotFieldLocation.x;
-//        fieldY = robotFieldLocation.y;
+        fieldX = robotFieldLocation.x;
+        fieldY = robotFieldLocation.y;
+
+        om.haveBlueWobble1 = false;
 
         robotNavigator(om);
         om.updateIMU();
@@ -955,16 +1009,17 @@ public class DriveTrain {
         distanceToTarget = findDistance(new PursuitPoint(robotFieldLocation.x,robotFieldLocation.y),pathPoints.get(pathPoints.size()-1));
 
         while((distanceToTarget > radius) && (om.opModeIsActive() || om.testModeActive)) {
-//            angleUnWrap();
-            robotNavigator(om);
+            om.haveBlueWobble1 = true;
+
             om.updateIMU();
+            robotNavigator(om);
+
 
             targetPoint = findPursuitPoint(pathPoints, robotFieldLocation, radius);//robotLocation used is
 
-
             //navigator calculates its own angle, compare to IMU for accuracy?
             setTargetAngle(targetPoint,  robotFieldLocation);// calculates the angle to the target point - updates "targetHeading"
-            steeringPower = calcSteeringPowerIMU(targetHeading,om);// "targetHeading" used for steering power calculation
+            steeringPower = calcSteeringPowerNav(targetHeading,robotHeading,om);// "targetHeading" used for steering power calculation
                 //calcSteeringPower contains angleUnwrap that updates the robotHeading for the robotNavigator in next loop iteration
 
             /**
