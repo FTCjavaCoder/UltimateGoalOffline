@@ -996,8 +996,6 @@ public class DriveTrain {
         fieldX = robotFieldLocation.x;
         fieldY = robotFieldLocation.y;
 
-        om.haveBlueWobble1 = false;
-
         robotNavigator(om);
         om.updateIMU();
 
@@ -1009,7 +1007,6 @@ public class DriveTrain {
         distanceToTarget = findDistance(new PursuitPoint(robotFieldLocation.x,robotFieldLocation.y),pathPoints.get(pathPoints.size()-1));
 
         while((distanceToTarget > radius) && (om.opModeIsActive() || om.testModeActive)) {
-            om.haveBlueWobble1 = true;
 
             om.updateIMU();
             robotNavigator(om);

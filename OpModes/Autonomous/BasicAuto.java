@@ -56,7 +56,7 @@ public class BasicAuto extends BasicOpMode {
 //
     public boolean skystoneFound = false;
 //
-    public int ringSelect = -1;// FOR BLUE: 0 nearest to bridge, 1 center, 2 farthest from bridge FOR RED: 0 farthest from bridge, 1 center, 2 nearest to bridge
+    public int ringSelect = 0;// 0 = no rings Wobble goes to zone A, 1 = 1 ring, Wobble goes to zone B, 4 = ringStack wobble goes to zone C
 //
 //    public double secondStoneBackup = 8;
 //
