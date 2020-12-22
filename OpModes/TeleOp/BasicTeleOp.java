@@ -42,7 +42,8 @@ public class BasicTeleOp extends BasicOpMode {
 
     public int telemetryOption = 1;
 
-    public ElapsedTime runtime = new ElapsedTime(); //create a counter for elapsed time
+//    public ElapsedTime runtime = new ElapsedTime(); //create a counter for elapsed time
+    // moved to BasicOpMode
 
     @Override
     public void runOpMode() {

@@ -81,7 +81,8 @@ public class BasicAuto extends BasicOpMode {
 
     public double detectionRotateSpeed = 0.1;
 
-    public ElapsedTime runtime = new ElapsedTime(); //create a counter for elapsed time
+//    public ElapsedTime runtime = new ElapsedTime(); //create a counter for elapsed time
+    // moved to BasicOpMode
 
     public boolean haveBlueRing = false;
     public boolean haveRedRing = false;

@@ -27,23 +27,30 @@ public class Shooter {
      *            initTestMode is a separate constructor
      */
 
-    public Shooter(BasicOpMode om)  {
-
-
-        shooterLeft =om.hardwareMap.get(DcMotor .class,"motor_shooterL");
-        shooterRight =om.hardwareMap.get(DcMotor .class,"motor_shooterR");
-    }
 
     public Shooter(BasicOpMode om, boolean tm)  {
         if(tm) {
+            om.telemetry.addData("Shooter", " Initializing ...");
+            om.telemetry.update();
 
             shooterLeft = new DcMotor();
             shooterRight = new DcMotor();
+
+            shooterLeft.timeStep = om.timeStep;
+            shooterRight.timeStep = om.timeStep;
+
+
+            om.telemetry.addLine("\t\t... Initialization COMPLETE");
+            om.telemetry.update();
         }
         else {
-
+            om.telemetry.addData("Shooter", " Initializing ...");
+            om.telemetry.update();
             shooterLeft =om.hardwareMap.get(DcMotor .class,"motor_shooterL");
             shooterRight =om.hardwareMap.get(DcMotor .class,"motor_shooterR");
+
+            om.telemetry.addLine("\t\t... Initialization COMPLETE");
+            om.telemetry.update();
         }
     }
     public void ShooterControl(Gamepad gamepad, BasicOpMode om) {
@@ -68,5 +75,20 @@ public class Shooter {
             om.sleep(300);
         }
 
+    }
+    /* -- COACH NOTE: need to add method for autonomous shooter control
+     *  - method required to set power like "dpad" button
+     *  - also need a stop method to shutdown after 3 shots
+     *  - made a shutdown method for all hardware
+     *
+     */
+    public void setShooter_Power(double power){
+        shooter_Power = power;
+        shooterLeft.setPower(shooter_Power);
+        shooterRight.setPower(-shooter_Power);
+    }
+    public void shutdown(){
+        shooterLeft.setPower(0.0);
+        shooterRight.setPower(0.0);
     }
 }

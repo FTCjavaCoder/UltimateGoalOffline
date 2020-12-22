@@ -16,19 +16,32 @@ public class Collector {
 
     public Collector(BasicOpMode om, boolean tm)  {
         if(tm) {
-            om.telemetry.addData("Status: ", "Called Constructor and TestMode is true");
+            om.telemetry.addData("Collector", " Initializing ...");
+            om.telemetry.update();
+
             collectorWheel = new DcMotor();
+
             collectorWheel.setPower(0);
             collectorWheel.setDirection(DcMotorSimple.Direction.FORWARD);
             collectorWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            collectorWheel.timeStep = om.timeStep;
+
+            om.telemetry.addLine("\t\t... Initialization COMPLETE");
+            om.telemetry.update();
         }
         else {
+            om.telemetry.addData("Collector", " Initializing ...");
+            om.telemetry.update();
+
             collectorWheel = om.hardwareMap.get(DcMotor.class, "motor_collector");
 
             collectorWheel.setPower(0);
             collectorWheel.setDirection(DcMotorSimple.Direction.FORWARD);
             collectorWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+            om.telemetry.addLine("\t\t... Initialization COMPLETE");
+            om.telemetry.update();
         }
 
     }
@@ -53,5 +66,9 @@ public class Collector {
             om.sleep(300);
         }
 
+    }
+
+    public void shutdown(){
+        collectorWheel.setPower(0.0);
     }
 }

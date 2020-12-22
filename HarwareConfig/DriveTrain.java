@@ -90,44 +90,8 @@ public class DriveTrain {
     public Orientation angles;
 
 
-    /** CONSTRUCTORS
-     * Taking the approach that when constructing robot all the initialization items can be run
-     * Approach is that null Robot existing in BasicOpMode and then each OpMode constructs the Robot it needs
-     * Methods within BasicAuto to be re-used would need to pass the Robot to have the correct robot config
-     * This enables having similar code for different configs
-     * @param om: this is the OpMode that is constructing the
-     *
-     */
     /* Initialize standard Hardware interfaces */
 
-    public DriveTrain(BasicOpMode om) {
-        om.telemetry.addData("Status: ", "Initializing DriveTrain ...");
-        // Define and Initialize Motors
-        frontLeft = om.hardwareMap.get(DcMotor.class, "motor_fl");
-        frontRight = om.hardwareMap.get(DcMotor.class, "motor_fr");
-        backLeft = om.hardwareMap.get(DcMotor.class, "motor_bl");
-        backRight = om.hardwareMap.get(DcMotor.class, "motor_br");
-
-        //Define all installed sensors
-
-
-        // Set up the parameters with which we will use our IMU. Note that integration
-        // algorithm here just reports accelerations to the logcat log; it doesn't actually
-        // provide positional information.
-
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-        parameters.loggingEnabled = true;
-        parameters.loggingTag = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
-        imu = om.hardwareMap.get(BNO055IMU.class, "imu");
-        imu.initialize(parameters);
-    }
 
     /** CONSTRUCTORS
      * Taking the approach that when constructing robot all the initialization items can be run
@@ -156,6 +120,12 @@ public class DriveTrain {
             // COACH UPDATE: define default condition for gear ratio in constructor
 // in case gear ratio method not called by user in OpMode
             setGearRatio(40.0, om);
+
+            imu.timeStep = om.timeStep;
+            frontLeft.timeStep = om.timeStep;
+            frontRight.timeStep = om.timeStep;
+            backRight.timeStep = om.timeStep;
+            backLeft.timeStep = om.timeStep;
         }
         else {
             om.telemetry.addData("Status: ", "Initializing DriveTrain ...");

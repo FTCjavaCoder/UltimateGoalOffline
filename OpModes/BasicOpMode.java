@@ -1,6 +1,7 @@
 package UltimateGoal_RobotTeam.OpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import OfflineCode.OfflineHW.Telemetry;
 import OfflineCode.OfflineOpModes.OpModeParamFunctions;
@@ -33,6 +34,12 @@ public class BasicOpMode extends LinearOpMode {
     public boolean testModeActive = false;
 
     public Telemetry telemetry = new Telemetry();
+
+    public ElapsedTime runtime = new ElapsedTime(); //create a counter for elapsed time
+
+    public double timeStep = 135;//determined a fixed time step (in milliseconds) so that faster speeds will show shorter time to distance
+    //Above needed for TestMode
+
 
     public BasicOpMode() {
 
