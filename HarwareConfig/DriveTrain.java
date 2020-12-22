@@ -74,9 +74,11 @@ public class DriveTrain {
     public double fieldY;
     public double fieldAngle;
 
-    public double targetX;
-    public double targetY;
+//    public double targetX;
+//    public double targetY;
     double targetHeading;
+
+    public double gearRatioDegToCounts = 40;// for 40 to 1 {Coach Note -- needs to be ratio not gear ratio, define in constructor}
 
     public int countDistance = 0;
 
@@ -151,9 +153,13 @@ public class DriveTrain {
             imu = new BNO055IMU();
             BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();//Need help on enclosing class
             imu.initialize(parameters);
+            // COACH UPDATE: define default condition for gear ratio in constructor
+// in case gear ratio method not called by user in OpMode
+            setGearRatio(40.0, om);
         }
         else {
             om.telemetry.addData("Status: ", "Initializing DriveTrain ...");
+            om.telemetry.update();
             // Define and Initialize Motors
             frontLeft = om.hardwareMap.get(DcMotor.class, "motor_fl");
             frontRight = om.hardwareMap.get(DcMotor.class, "motor_fr");
@@ -180,6 +186,12 @@ public class DriveTrain {
             imu = om.hardwareMap.get(BNO055IMU.class, "imu");
             imu.initialize(parameters);
 
+            // INITIALIZE DRIVE TRAIN MOTORS
+            frontLeft.setPower(0);
+            frontRight.setPower(0);
+            backLeft.setPower(0);
+            backRight.setPower(0);
+
             frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
             frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
             backLeft.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -196,20 +208,17 @@ public class DriveTrain {
             backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            frontLeft.setTargetPosition(0);
-            frontRight.setTargetPosition(0);
-            backLeft.setTargetPosition(0);
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            //Set all motors to position mode (assumes that all motors have encoders on them)
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+// COACH UPDATE: define default condition for gear ratio in constructor
+// in case gear ratio method not called by user in OpMode
+            setGearRatio(40.0, om);
+            //Indicate initialization complete and provide telemetry
+            om.telemetry.addData("Status: ", "Drive Train Initialized");
 
-            frontLeft.setPower(0);
-            frontRight.setPower(0);
-            backLeft.setPower(0);
-            backRight.setPower(0);
         }
 
     }
@@ -265,10 +274,22 @@ public class DriveTrain {
         priorAngle = angles.firstAngle;//Update the latest measurement to be //priorAngle for the next time we call the method
 
     }
+    public void setGearRatio(double gearRatioChoice, BasicOpMode om) {
 
-    public double calcSteeringPowerIMU(double angleWanted, BasicOpMode om) {
+        if(gearRatioChoice == 40) {
+            gearRatioDegToCounts = om.cons.DEGREES_TO_COUNTS_40_1; // 40 to 1 gear ratio
+        }
+
+        if(gearRatioChoice == 60) {
+            gearRatioDegToCounts = om.cons.DEGREES_TO_COUNTS_60_1;// 60 to 1 gear ratio
+        }
+
+    }
+
+    public double calcSteeringPowerIMU(double angleWanted, BasicAuto om) {
 
         angleUnWrap();
+        om.updateIMU();
         double steerPower = (angleWanted - robotHeading) * om.cons.STEERING_POWER_GAIN;
 
         double clippedSteering = -1.0 * (Range.clip(steerPower, -om.cons.STEERING_POWER_LIMIT, om.cons.STEERING_POWER_LIMIT) );// -1.0 due to motors must turn neagtive direction for CW rotation (+ rotation)
@@ -388,7 +409,7 @@ public class DriveTrain {
         //drive motor calculations
 //
 //        int deltaSum = (deltaFL  + deltaFR  + deltaBR  + deltaBL)/4;
-//        robotAngle -= deltaSum / (om.cons.DEGREES_TO_COUNTS * om.cons.ROBOT_INCH_TO_MOTOR_DEG *
+//        robotAngle -= deltaSum / (gearRatioDegToCounts * om.cons.ROBOT_INCH_TO_MOTOR_DEG *
 //                om.cons.ROBOT_DEG_TO_WHEEL_INCH );
 
         // Update to use IMU angle
@@ -419,9 +440,9 @@ public class DriveTrain {
 //Coordinate transformation to take motor drive coordinates to robot body reference frame - fixed 45 deg rotation
         // Simplify by averaging all distance in correct frame
         double robotXInc = ((-deltaFL + deltaFR + deltaBR - deltaBL)/4)/
-                (om.cons.DEGREES_TO_COUNTS_60_1*om.cons.ROBOT_INCH_TO_MOTOR_DEG*om.cons.adjForward);
+                (gearRatioDegToCounts*om.cons.ROBOT_INCH_TO_MOTOR_DEG*om.cons.adjForward); //Changed from 60:1 to 40:1
         double robotYInc = -((-deltaFL - deltaFR + deltaBR + deltaBL)/4)/
-                (om.cons.DEGREES_TO_COUNTS_60_1*om.cons.ROBOT_INCH_TO_MOTOR_DEG*om.cons.adjRight);
+                (gearRatioDegToCounts*om.cons.ROBOT_INCH_TO_MOTOR_DEG*om.cons.adjRight); //Changed from 60:1 to 40:1
         robotX += robotXInc;
         robotY += robotYInc;
 /** robotX & robotY are not used else where - navigator tracks field coordinates
@@ -445,13 +466,12 @@ public class DriveTrain {
          */
 
         /** previous values can be handled outside navigator or passed in
-        */
+         */
         flPrevious = flCount;
         frPrevious = frCount;
         brPrevious = brCount;
         blPrevious = blCount;
     }
-
     /**
      * METHODS BELOW MOVED FROM pursuitMath and pursuitPath
      */
@@ -648,13 +668,13 @@ public class DriveTrain {
         return PointList;
 
     }
-    public void setTargetAngle(PursuitPoint targetP, FieldLocation field){
+    public void setTargetAngle(PursuitPoint targetP, FieldLocation field, BasicAuto om){
         double angle = -Math.atan2(targetP.y- field.y, targetP.x- field.x) * 180/Math.PI;
         /** negative sign for the change in rotation sign convention + = CW for steering
          * NOTE SIGN CONVENTION
          */
 
-//Need to maintain unwrapped target angle ... unwraps delta angle - an issue if the target changes by 180?0
+//Need to maintain unwrapped target angle ... unwraps delta angle - an issue if the target changes by 180?
         double deltaAngle = angle - targetHeading;// difference between robot center to target point and robot heading
         if (deltaAngle > 180) {//This is IF/THEN for the unwrap routine
             targetHeading += deltaAngle - 360;//Decrease angle for negative direction //rotation
@@ -663,6 +683,16 @@ public class DriveTrain {
         } else {
             targetHeading += deltaAngle;//No wrap happened, don't add any extra rotation
         }
+
+        // TROUBLESHOOTING
+        om.telemetry.addData("angle","%1.2f",angle);
+        om.telemetry.addData("deltaAngle","%1.2f",deltaAngle);
+        om.telemetry.addData("targetHeading","%1.2f",targetHeading);
+        om.telemetry.update();
+        targetHeading = angle;//just return the atan value, matches field convention
+
+        // END TROUBLESHOOTING
+
     }
 
     /** METHODS FOR AUTONOMOIUS DRIVING
@@ -719,10 +749,11 @@ public class DriveTrain {
         priorPos = currentPos;
 
         calcDistanceIMU(driveDirection, om);
-        angleUnWrap();
-        double steeringPower = calcSteeringPowerIMU(targetAngle, om);
+        //            angleUnWrap();
+        robotNavigator(om);//replaces angleUnwrap (called in navigator)
+        double steeringPower = calcSteeringPowerNav(targetAngle, robotHeading,om);//Updated to Nav version since Navigator called
 
-        robotNavigator(om);//ADDED
+
         om.updateIMU();
 
         double prePower[] = new double[4];
@@ -755,10 +786,9 @@ public class DriveTrain {
             currentPos = getMotorPosArray();
 
             calcDistanceIMU(driveDirection, om);
-            angleUnWrap();
-            steeringPower = calcSteeringPowerIMU(targetAngle, om);
-            robotNavigator(om);//ADDED
-
+//            angleUnWrap();
+            robotNavigator(om);//replaces angleUnwrap (called in navigator)
+            steeringPower = calcSteeringPowerNav(targetAngle, robotHeading,om);//Updated to Nav version since Navigator called
             om.updateIMU();
 
             for (int i = 0; i < 4; i++) {
@@ -805,7 +835,8 @@ public class DriveTrain {
 
         setMotorPower(0);
 
-        angleUnWrap();
+        //            angleUnWrap();
+        robotNavigator(om);//replaces angleUnwrap (called in navigator)
         om.updateIMU();
 
         om.telemetry.addData("COMPLETED Driving: ", step);
@@ -852,9 +883,8 @@ public class DriveTrain {
         currentPos = getMotorPosArray();
         //*************** ADDED CURRENT POSITION CALCULATION  ************************************
 
-        angleUnWrap();
-
-        robotNavigator(om);//ADDED
+        //            angleUnWrap();
+        robotNavigator(om);//replaces angleUnwrap (called in navigator)
 
         om.updateIMU();
 
@@ -875,9 +905,8 @@ public class DriveTrain {
             //*************** ADDED CURRENT POSITION CALCULATION  FOR TELEMETRY ************************************
 
 
-            angleUnWrap();
-
-            robotNavigator(om);//ADDED
+            //            angleUnWrap();
+            robotNavigator(om);//replaces angleUnwrap (called in navigator)
 
             om.updateIMU();
 
@@ -906,7 +935,8 @@ public class DriveTrain {
         setMotorPower(0);
 
         currentPos = getMotorPosArray();
-        angleUnWrap();
+        //            angleUnWrap();
+        robotNavigator(om);//replaces angleUnwrap (called in navigator)
         om.updateIMU();
 
         om.telemetry.addData("COMPLETED Driving: ", step);
@@ -1008,14 +1038,14 @@ public class DriveTrain {
 
         while((distanceToTarget > radius) && (om.opModeIsActive() || om.testModeActive)) {
 
-            om.updateIMU();
-            robotNavigator(om);
 
+            robotNavigator(om);
+            om.updateIMU();
 
             targetPoint = findPursuitPoint(pathPoints, robotFieldLocation, radius);//robotLocation used is
 
             //navigator calculates its own angle, compare to IMU for accuracy?
-            setTargetAngle(targetPoint,  robotFieldLocation);// calculates the angle to the target point - updates "targetHeading"
+            setTargetAngle(targetPoint,  robotFieldLocation, om);// calculates the angle to the target point - updates "targetHeading"
             steeringPower = calcSteeringPowerNav(targetHeading,robotHeading,om);// "targetHeading" used for steering power calculation
                 //calcSteeringPower contains angleUnwrap that updates the robotHeading for the robotNavigator in next loop iteration
 

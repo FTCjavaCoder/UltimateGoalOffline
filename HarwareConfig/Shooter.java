@@ -1,9 +1,13 @@
 package UltimateGoal_RobotTeam.HarwareConfig;
 
+import com.qualcomm.robotcore.hardware.Gamepad;
+
 import OfflineCode.OfflineHW.DcMotor;
 import UltimateGoal_RobotTeam.OpModes.BasicOpMode;
 
 public class Shooter {
+
+    public double shooter_Power = 0;
 
     /* Public OpMode members. */
     public DcMotor shooterLeft = null;
@@ -41,5 +45,28 @@ public class Shooter {
             shooterLeft =om.hardwareMap.get(DcMotor .class,"motor_shooterL");
             shooterRight =om.hardwareMap.get(DcMotor .class,"motor_shooterR");
         }
+    }
+    public void ShooterControl(Gamepad gamepad, BasicOpMode om) {
+
+        if (gamepad.dpad_left) {
+            shooter_Power = 0;
+            shooterLeft.setPower(shooter_Power);
+            shooterRight.setPower(shooter_Power);
+            om.sleep(300);
+        }
+
+        if (gamepad.dpad_up) {
+            shooter_Power -= 0.05;
+            shooterLeft.setPower(shooter_Power);
+            shooterRight.setPower(-shooter_Power);
+            om.sleep(300);
+        }
+        if (gamepad.dpad_down) {
+            shooter_Power += 0.05;
+            shooterLeft.setPower(shooter_Power);
+            shooterRight.setPower(-shooter_Power);
+            om.sleep(300);
+        }
+
     }
 }
