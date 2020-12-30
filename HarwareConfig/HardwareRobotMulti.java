@@ -54,6 +54,13 @@ public class HardwareRobotMulti
     public Conveyor conveyor   = null;
     public WobbleArm wobbleArm   = null;
     public Collector collector   = null;
+    public ImageRecog imageRecog   = null;
+
+    boolean[] configArrayHW = new boolean[]{ false, 	false, 	false, 		false, 		false,		false};//all defaults to false
+    private final int TELEMETRY_MAX_SIZE = 3;
+    private int telemetrySize = 1;
+    private int telemetryActiveIndex = 0;
+    private int[] telemetryOption = new int[]{1,0,0};//used to determine telemetry to display, must match TELEMETRY_MAX_SIZE
 
     /* Deleting unused items - HardwareMap is in OpMode and is passed anyways, period isn't used
     public HardwareMap hwMap           =  null;
@@ -71,6 +78,7 @@ public class HardwareRobotMulti
      * [2] = Conveyor
      * [3] = WobbleArm
      * [4] = Collector
+     * [5] = ImageRecog
      *  items that are 1 = true will be configured to the robot
      *
      * @param tm : boolean for whether testModeActive is true or false - true calls the testmode version of the constructor
@@ -78,12 +86,15 @@ public class HardwareRobotMulti
     public HardwareRobotMulti(BasicOpMode om, boolean[] configArray, boolean tm){
         //configArray has True or False values for each subsystem HW element
         // Use the array to make it easy to pass values bu then values are decoded in constructor for ease of understanding
+        configArrayHW = configArray;
 
         boolean trueDriveTrain = configArray[0];
         boolean trueShooter = configArray[1];
         boolean trueConveyor= configArray[2];
         boolean trueWobbleArm = configArray[3];
         boolean trueCollector = configArray[4];
+        boolean trueImageRecog = configArray[5];
+
 
         if (trueDriveTrain) {
             driveTrain = new DriveTrain(om,tm);
@@ -100,9 +111,31 @@ public class HardwareRobotMulti
         if (trueCollector) {
             collector = new Collector(om,tm);
         }
+        if (trueImageRecog) {
+            imageRecog = new ImageRecog(om,tm);
+        }
 
     }
 
     /* Methods */
-
+    public void shutdownAll(){
+        if (configArrayHW[0]) {
+            driveTrain.shutdown();
+        }
+        if (configArrayHW[1]) {
+            shooter.shutdown();
+        }
+        if (configArrayHW[2]) {
+            conveyor.shutdown();
+        }
+        if (configArrayHW[3]) {
+            wobbleArm.shutdown();
+        }
+        if (configArrayHW[4]) {
+            collector.shutdown();
+        }
+        if (configArrayHW[5]) {
+            imageRecog.shutdown();
+        }
+    }
 }

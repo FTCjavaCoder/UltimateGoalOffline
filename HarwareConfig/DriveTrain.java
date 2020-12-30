@@ -76,9 +76,11 @@ public class DriveTrain {
 
 //    public double targetX;
 //    public double targetY;
-    double targetHeading;
+    public double targetHeading;
 
-    public double gearRatioDegToCounts = 40;// for 40 to 1 {Coach Note -- needs to be ratio not gear ratio, define in constructor}
+    public final double DEGREES_TO_COUNTS_1to1 = 24.0/360.0;//24 counts per revolution if gear ratio is 1:1, 60:1 = 1440
+    public double gearRatio = 1.0;//use to determine that gear ratio for drive train has been set
+    public double gearRatioDegToCounts = gearRatio * DEGREES_TO_COUNTS_1to1;// for 40 to 1 {Coach Note -- needs to be ratio not gear ratio, define in constructor}
 
     public int countDistance = 0;
 
@@ -119,7 +121,7 @@ public class DriveTrain {
             imu.initialize(parameters);
             // COACH UPDATE: define default condition for gear ratio in constructor
 // in case gear ratio method not called by user in OpMode
-            setGearRatio(40.0, om);
+            setGearRatio(40.0);
 
             imu.timeStep = om.timeStep;
             frontLeft.timeStep = om.timeStep;
@@ -185,7 +187,7 @@ public class DriveTrain {
 
 // COACH UPDATE: define default condition for gear ratio in constructor
 // in case gear ratio method not called by user in OpMode
-            setGearRatio(40.0, om);
+            setGearRatio(40.0);
             //Indicate initialization complete and provide telemetry
             om.telemetry.addData("Status: ", "Drive Train Initialized");
 
@@ -210,20 +212,44 @@ public class DriveTrain {
         om.sleep(100);
     }
 
-    public void initIMUtoAngle(BasicOpMode om, double initAngle) {
+    public void initIMUtoAngle(double initAngle) {
 
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);//This line calls the angles from the IMU
 
         offset = angles.firstAngle - initAngle; //Determine initial angle offset 
         priorAngle = angles.firstAngle; //set prior angle for unwrap to be initial angle 
         robotHeading = angles.firstAngle - offset; //robotHeading to be set at 0 degrees to start 
-
-//        om.sleep(100);
     }
-    /** METHODS TO COMPELTE CALCULATIONS NEEDED FOR OTHER DRIVIGN METHODS
-     *
-     */
+    public void shutdown(){
+        // stops motors from driving, should they coast or hold?  currently set to hold
+//        frontLeft.setZeroPowerBehavior(FLOAT);
+//        frontRight.setZeroPowerBehavior(FLOAT);
+//        backLeft.setZeroPowerBehavior(FLOAT);
+//        backRight.setZeroPowerBehavior(FLOAT);
+        setMotorPower(0.0);
+    }
+    public void setGearRatio(double gearRatioChoice) {
+        gearRatio = gearRatioChoice;// set global variable to input
+        //calculate degrees to counts based on gear ratio of motor gear box input
+        gearRatioDegToCounts = gearRatio * DEGREES_TO_COUNTS_1to1;
 
+    }
+    public void setMotorPower(double power) {
+
+        frontLeft.setPower(power);
+        frontRight.setPower(power);
+        backRight.setPower(power);
+        backLeft.setPower(power);
+
+    }
+    public void setMotorPowerArray(double[] power) {
+
+        frontLeft.setPower(power[0]);
+        frontRight.setPower(power[1]);
+        backRight.setPower(power[2]);
+        backLeft.setPower(power[3]);
+
+    }
     public void angleUnWrap() {
 
         double deltaAngle;
@@ -233,7 +259,7 @@ public class DriveTrain {
         /* Compute the change in angle since the last measurement */
         deltaAngle = -(angles.firstAngle - priorAngle);// Determine how much the angle has changed since we last checked the angle
         /* Since the IMU angle is wrapped we have to check for a wrap crossing
-        * We don't want the robotHeading to be wrapped because that will create a discontinuity */
+         * We don't want the robotHeading to be wrapped because that will create a discontinuity */
         if (deltaAngle > 180) {//This is IF/THEN for the unwrap routine
             robotHeading += deltaAngle - 360;//Decrease angle for negative direction //rotation
         } else if (deltaAngle < -180) {
@@ -244,18 +270,9 @@ public class DriveTrain {
         priorAngle = angles.firstAngle;//Update the latest measurement to be //priorAngle for the next time we call the method
 
     }
-    public void setGearRatio(double gearRatioChoice, BasicOpMode om) {
-
-        if(gearRatioChoice == 40) {
-            gearRatioDegToCounts = om.cons.DEGREES_TO_COUNTS_40_1; // 40 to 1 gear ratio
-        }
-
-        if(gearRatioChoice == 60) {
-            gearRatioDegToCounts = om.cons.DEGREES_TO_COUNTS_60_1;// 60 to 1 gear ratio
-        }
-
-    }
-
+    /** METHODS TO COMPELTE CALCULATIONS NEEDED FOR OTHER DRIVIGN METHODS
+     *
+     */
     public double calcSteeringPowerIMU(double angleWanted, BasicAuto om) {
 
         angleUnWrap();
@@ -316,25 +333,6 @@ public class DriveTrain {
 
         return currentPos;
     }
-
-    public void setMotorPower(double power) {
-
-        frontLeft.setPower(power);
-        frontRight.setPower(power);
-        backRight.setPower(power);
-        backLeft.setPower(power);
-
-    }
-
-    public void setMotorPowerArray(double[] power) {
-
-        frontLeft.setPower(power[0]);
-        frontRight.setPower(power[1]);
-        backRight.setPower(power[2]);
-        backLeft.setPower(power[3]);
-
-    }
-
     public boolean targetPosTolerence(BasicAuto om) {
 
         int countTol = 0;
@@ -445,7 +443,7 @@ public class DriveTrain {
     /**
      * METHODS BELOW MOVED FROM pursuitMath and pursuitPath
      */
-    public PursuitPoint findPursuitPoint(ArrayList<PursuitPoint> inputPoints, FieldLocation robot, double radius) {
+    public PursuitPoint findPursuitPoint(ArrayList<PursuitPoint> inputPoints, FieldLocation robot, double radius, BasicOpMode om) {
 
 //        PursuitPoint currentPoint = inputPoints.get(0); // issue with tracking the start point as in scope
         //set line starting point as default for starting to follow ... when robot gets lost it heads to first line point
@@ -644,21 +642,21 @@ public class DriveTrain {
          * NOTE SIGN CONVENTION
          */
 
-//Need to maintain unwrapped target angle ... unwraps delta angle - an issue if the target changes by 180?
-        double deltaAngle = angle - targetHeading;// difference between robot center to target point and robot heading
-        if (deltaAngle > 180) {//This is IF/THEN for the unwrap routine
-            targetHeading += deltaAngle - 360;//Decrease angle for negative direction //rotation
-        } else if (deltaAngle < -180) {
-            targetHeading += deltaAngle + 360;//increase angle for positive direction //rotation 
-        } else {
-            targetHeading += deltaAngle;//No wrap happened, don't add any extra rotation
-        }
-
-        // TROUBLESHOOTING
-        om.telemetry.addData("angle","%1.2f",angle);
-        om.telemetry.addData("deltaAngle","%1.2f",deltaAngle);
-        om.telemetry.addData("targetHeading","%1.2f",targetHeading);
-        om.telemetry.update();
+////Need to maintain unwrapped target angle ... unwraps delta angle - an issue if the target changes by 180?
+//        double deltaAngle = angle - targetHeading;// difference between robot center to target point and robot heading
+//        if (deltaAngle > 180) {//This is IF/THEN for the unwrap routine
+//            targetHeading += deltaAngle - 360;//Decrease angle for negative direction //rotation
+//        } else if (deltaAngle < -180) {
+//            targetHeading += deltaAngle + 360;//increase angle for positive direction //rotation 
+//        } else {
+//            targetHeading += deltaAngle;//No wrap happened, don't add any extra rotation
+//        }
+//
+//        // TROUBLESHOOTING
+//        om.telemetry.addData("angle","%1.2f",angle);
+//        om.telemetry.addData("deltaAngle","%1.2f",deltaAngle);
+//        om.telemetry.addData("targetHeading","%1.2f",targetHeading);
+//        om.telemetry.update();
         targetHeading = angle;//just return the atan value, matches field convention
 
         // END TROUBLESHOOTING
@@ -999,7 +997,7 @@ public class DriveTrain {
         robotNavigator(om);
         om.updateIMU();
 
-        targetPoint = findPursuitPoint(pathPoints, robotFieldLocation, radius);
+        targetPoint = findPursuitPoint(pathPoints, robotFieldLocation, radius, om);
 
         int count = 0;
         boolean limitedPower = false;
@@ -1012,7 +1010,7 @@ public class DriveTrain {
             robotNavigator(om);
             om.updateIMU();
 
-            targetPoint = findPursuitPoint(pathPoints, robotFieldLocation, radius);//robotLocation used is
+            targetPoint = findPursuitPoint(pathPoints, robotFieldLocation, radius, om);//robotLocation used is
 
             //navigator calculates its own angle, compare to IMU for accuracy?
             setTargetAngle(targetPoint,  robotFieldLocation, om);// calculates the angle to the target point - updates "targetHeading"

@@ -363,8 +363,8 @@ public ArrayList<PursuitLines> lines = new ArrayList<>();
             case "None":
                 // Zone A pursuit points
 
-                fieldPoints.add(new PursuitPoint(-60,-18));
-                fieldPoints.add(new PursuitPoint(-60,0));
+                fieldPoints.add(new PursuitPoint(-54,-18));
+                fieldPoints.add(new PursuitPoint(-54,0));
                 break;
 
             case "Single":
@@ -378,8 +378,8 @@ public ArrayList<PursuitLines> lines = new ArrayList<>();
             case "Quad":
                 // Zone C pursuit points
 
-                fieldPoints.add(new PursuitPoint(-60,-18));
-                fieldPoints.add(new PursuitPoint(-60,48));
+                fieldPoints.add(new PursuitPoint(-54,-18));
+                fieldPoints.add(new PursuitPoint(-54,48));
                 break;
 
             case "Multiple":

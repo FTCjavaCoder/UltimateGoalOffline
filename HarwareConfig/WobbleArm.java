@@ -22,7 +22,7 @@ public class WobbleArm {
     public double wobbleGrabPos = 0.5;
     public double wobbleReleasePos = 0;
     public int wobbleArmTarget = 0;
-    public int wobbleArmTargetAngle = 0;
+    public double wobbleArmTargetAngle = 0.0;
     public int armDegInc = 1;
     public int armDegIncBig = 25;
     public double armPower = 0.0;
@@ -59,7 +59,7 @@ public class WobbleArm {
 //            wobbleGoalArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             wobbleGoalArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            wobbleGoalArm.timeStep = om.timeStep * (ARM_GEAR_RATIO/60.0);//needs to be finer increment
+            wobbleGoalArm.timeStep = om.timeStep * (0.1);//needs to be finer increment
 
             om.telemetry.addLine("\t\t... Initialization COMPLETE");
             om.telemetry.update();
@@ -137,12 +137,12 @@ public class WobbleArm {
     public void autoWobbleMotorVariable(Gamepad gamepad, BasicOpMode om) {
 
         if (gamepad.y) {
-            wobbleArmTargetAngle = 110;
+            wobbleArmTargetAngle = 110/2 * (24/15);/* UPDATED ABOVE ANGLE FOR GEAR RATIO UPDATE    */
 //            wobbleArmTarget = (int) Math.round(wobbleArmTargetAngle * (MOTOR_DEG_TO_COUNT * ARM_GEAR_RATIO));// KS added om.cons & commented
             om.sleep(300);
         }
         if (gamepad.a) {
-            wobbleArmTargetAngle = 70;
+            wobbleArmTargetAngle = 70/2 * (24/15);/* UPDATED ABOVE ANGLE FOR GEAR RATIO UPDATE    */
 //            wobbleArmTarget = (int) Math.round(wobbleArmTargetAngle * (MOTOR_DEG_TO_COUNT * ARM_GEAR_RATIO));// KS added om.cons & commented
             om.sleep(300);
         }
@@ -195,7 +195,7 @@ public class WobbleArm {
         om.updateIMU();//needed offline to track positions
         om.telemetry.addLine("WOBBLE GOAL DROP:");
         om.telemetry.addData("\ttime step", "%.3f", om.robotUG.wobbleArm.wobbleGoalArm.timeStep);
-        om.telemetry.addData("\tArm Target", "(%d) degrees",om.robotUG.wobbleArm.wobbleArmTargetAngle);
+        om.telemetry.addData("\tArm Target", "(%.1f) degrees",om.robotUG.wobbleArm.wobbleArmTargetAngle);
         om.telemetry.addData("\tArm Angle", "Goal Arm Current Angle (%.2f) degrees",om.robotUG.wobbleArm.getArmAngleDegrees());
         om.telemetry.addData("\tMotor Variables", "Goal Arm Power (%.2f), Goal Arm Target (%d) counts", om.robotUG.wobbleArm.armPower, om.robotUG.wobbleArm.wobbleGoalArm.getTargetPosition());
         om.telemetry.addData("\tMotor Position", "Goal Arm Current Pos (%d) counts", om.robotUG.wobbleArm.wobbleGoalArm.getCurrentPosition());
@@ -207,7 +207,7 @@ public class WobbleArm {
 
         wobbleGoalArm.setPower(0.5);
 
-        wobbleArmTargetAngle = 30;
+        wobbleArmTargetAngle = 30.0;
 //        wobbleArmTarget = (int) Math.round(wobbleArmTargetAngle * (MOTOR_DEG_TO_COUNT * ARM_GEAR_RATIO));// KS added om.cons & commented
         wobbleGoalArm.setTargetPosition(angleToCounts(wobbleArmTargetAngle));
         /* Coach note: has this been tested?  There might need to be a loop to wait for the motor to get to the target position
@@ -220,7 +220,7 @@ public class WobbleArm {
            om.updateIMU();//needed offline to track positions
            om.telemetry.addLine("WOBBLE GOAL DROP:");
            om.telemetry.addData("\ttime step", "%.3f", om.robotUG.wobbleArm.wobbleGoalArm.timeStep);
-           om.telemetry.addData("\tArm Target", "(%d) degrees",om.robotUG.wobbleArm.wobbleArmTargetAngle);
+           om.telemetry.addData("\tArm Target", "(%.1f) degrees",om.robotUG.wobbleArm.wobbleArmTargetAngle);
            om.telemetry.addData("\tArm Angle", "Goal Arm Current Angle (%.2f) degrees",om.robotUG.wobbleArm.getArmAngleDegrees());
            om.telemetry.addData("\tMotor Variables", "Goal Arm Power (%.2f), Goal Arm Target (%d) counts", om.robotUG.wobbleArm.armPower, om.robotUG.wobbleArm.wobbleGoalArm.getTargetPosition());
            om.telemetry.addData("\tMotor Position", "Goal Arm Current Pos (%d) counts", om.robotUG.wobbleArm.wobbleGoalArm.getCurrentPosition());
@@ -233,7 +233,7 @@ public class WobbleArm {
         wobbleGoalServo.setPosition(0.5);
 //        om.sleep(500);//might not need to be this long
 
-        wobbleArmTargetAngle = 100;
+        wobbleArmTargetAngle = 100.0;
 //        wobbleArmTarget = (int) Math.round(wobbleArmTargetAngle * (MOTOR_DEG_TO_COUNT * ARM_GEAR_RATIO));// KS added om.cons & commented
         wobbleGoalArm.setTargetPosition(angleToCounts(wobbleArmTargetAngle));
         while(Math.abs(wobbleGoalArm.getTargetPosition() - wobbleGoalArm.getCurrentPosition()) > 10){// alternate loop criteria but need variable for tolerances
@@ -245,7 +245,7 @@ public class WobbleArm {
             om.telemetry.addLine("WOBBLE GOAL DROP:");
             om.telemetry.addData("\ttime step", "%.3f", om.robotUG.wobbleArm.wobbleGoalArm.timeStep);
 
-            om.telemetry.addData("\tArm Target", "Goal Arm Target Angle (%d) degrees", om.robotUG.wobbleArm.wobbleArmTargetAngle);
+            om.telemetry.addData("\tArm Target", "Goal Arm Target Angle (%.1f) degrees", om.robotUG.wobbleArm.wobbleArmTargetAngle);
             om.telemetry.addData("\tArm Angle", "Goal Arm Current Angle (%.2f) degrees",om.robotUG.wobbleArm.getArmAngleDegrees());
             om.telemetry.addData("\tMotor Variables", "Goal Arm Power (%.2f), Goal Arm Target (%d) counts", om.robotUG.wobbleArm.armPower, om.robotUG.wobbleArm.wobbleGoalArm.getTargetPosition());
             om.telemetry.addData("\tMotor Position", "Goal Arm Current Pos (%d) counts", om.robotUG.wobbleArm.wobbleGoalArm.getCurrentPosition());
@@ -258,6 +258,29 @@ public class WobbleArm {
         }
         wobbleGoalServo.setPosition(0);
 //        om.sleep(500);//might not need to be this long
+        //release wobble goal
+        om.haveBlueWobble1 = false;
+        wobbleArmTargetAngle = 10.0;
+        /* LIFT ARM   */
+
+        wobbleGoalArm.setTargetPosition(angleToCounts(wobbleArmTargetAngle));
+        while(Math.abs(wobbleGoalArm.getTargetPosition() - wobbleGoalArm.getCurrentPosition()) > 10){// alternate loop criteria but need variable for tolerances
+            // do nothing but wait for arm to move within tolerance
+            om.robotUG.driveTrain.robotNavigator(om);//replaces angleUnwrap (called in navigator)
+            om.updateIMU();//needed offline to track positions
+
+            om.telemetry.addLine("WOBBLE GOAL ARM RAISE:");
+            om.telemetry.addData("\tArm Target", "Goal Arm Target Angle (%.1f) degrees", om.robotUG.wobbleArm.wobbleArmTargetAngle);
+            om.telemetry.addData("\tArm Angle", "Goal Arm Current Angle (%.2f) degrees",om.robotUG.wobbleArm.getArmAngleDegrees());
+            om.telemetry.addData("\tMotor Variables", "Goal Arm Power (%.2f), Goal Arm Target (%d) counts", om.robotUG.wobbleArm.armPower, om.robotUG.wobbleArm.wobbleGoalArm.getTargetPosition());
+            om.telemetry.addData("\tMotor Position", "Goal Arm Current Pos (%d) counts", om.robotUG.wobbleArm.wobbleGoalArm.getCurrentPosition());
+            om.telemetry.addData("\tServo Variables", "Goal Grab (%.2f), Goal Release (%.2f)",
+                    om.robotUG.wobbleArm.wobbleGrabPos, om.robotUG.wobbleArm.wobbleReleasePos);
+            om.telemetry.addData("\tServo Position", "Servo Pos (%.2f)",om.robotUG.wobbleArm.wobbleGoalServo.getPosition());
+            om.telemetry.addLine("________________________________");
+            om.telemetry.update();
+
+        }
 
     }
     /* -- COACH ADDITIONS: added some useful methods to simplify top level telemetry and commands
@@ -277,7 +300,7 @@ public class WobbleArm {
         wobbleGoalArm.setZeroPowerBehavior(OfflineCode.OfflineHW.DcMotor.ZeroPowerBehavior.FLOAT);
         wobbleGoalArm.setPower(0.0);//could result in crash of arm when hitting stop
         // believe best to remove power
-        wobbleGoalServo.setPosition(wobbleReleasePos);//stop gripping
+        wobbleGoalServo.setPosition(0.0);//stop gripping
     }
 
 }
