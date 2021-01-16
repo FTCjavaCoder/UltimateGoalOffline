@@ -59,7 +59,7 @@ public class WobbleArm {
 //            wobbleGoalArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             wobbleGoalArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            wobbleGoalArm.timeStep = om.timeStep * (0.1);//needs to be finer increment
+            wobbleGoalArm.timeStep = om.timeStep * (0.2);//needs to be finer increment
 
             om.telemetry.addLine("\t\t... Initialization COMPLETE");
             om.telemetry.update();
@@ -207,7 +207,7 @@ public class WobbleArm {
 
         wobbleGoalArm.setPower(0.5);
 
-        wobbleArmTargetAngle = 30.0;
+        wobbleArmTargetAngle = 65.0;
 //        wobbleArmTarget = (int) Math.round(wobbleArmTargetAngle * (MOTOR_DEG_TO_COUNT * ARM_GEAR_RATIO));// KS added om.cons & commented
         wobbleGoalArm.setTargetPosition(angleToCounts(wobbleArmTargetAngle));
         /* Coach note: has this been tested?  There might need to be a loop to wait for the motor to get to the target position
@@ -230,10 +230,10 @@ public class WobbleArm {
            om.telemetry.addLine("________________________________");
            om.telemetry.update();
         }
-        wobbleGoalServo.setPosition(0.5);
+        wobbleGoalServo.setPosition(0.8);
 //        om.sleep(500);//might not need to be this long
 
-        wobbleArmTargetAngle = 100.0;
+        wobbleArmTargetAngle = 190.0;
 //        wobbleArmTarget = (int) Math.round(wobbleArmTargetAngle * (MOTOR_DEG_TO_COUNT * ARM_GEAR_RATIO));// KS added om.cons & commented
         wobbleGoalArm.setTargetPosition(angleToCounts(wobbleArmTargetAngle));
         while(Math.abs(wobbleGoalArm.getTargetPosition() - wobbleGoalArm.getCurrentPosition()) > 10){// alternate loop criteria but need variable for tolerances
@@ -256,11 +256,11 @@ public class WobbleArm {
             om.telemetry.update();
 
         }
-        wobbleGoalServo.setPosition(0);
+        wobbleGoalServo.setPosition(0.4);
 //        om.sleep(500);//might not need to be this long
         //release wobble goal
         om.haveBlueWobble1 = false;
-        wobbleArmTargetAngle = 10.0;
+        wobbleArmTargetAngle = 25.0;
         /* LIFT ARM   */
 
         wobbleGoalArm.setTargetPosition(angleToCounts(wobbleArmTargetAngle));
